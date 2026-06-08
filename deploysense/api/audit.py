@@ -38,12 +38,14 @@ FUTURE:
 """
 
 import uuid
+from collections.abc import Sequence
 from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from deploysense.logging import get_logger
+from deploysense.models import AuditLog
 
 logger = get_logger(__name__)
 
@@ -158,14 +160,12 @@ async def query_audit_logs(
     resource_id: str | None = None,
     since: datetime | None = None,
     limit: int = 50,
-) -> list:
+) -> Sequence[AuditLog]:
     """
     Query audit logs with filters.
 
     Used by the admin dashboard and compliance exports.
     """
-    from deploysense.models import AuditLog
-
     query = select(AuditLog)
 
     if actor_id:

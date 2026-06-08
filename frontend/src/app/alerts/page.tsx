@@ -1,36 +1,67 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import StatCard from '@/components/ui/StatCard';
 import PageHeader from '@/components/ui/PageHeader';
 import Panel from '@/components/ui/Panel';
 import EmptyState from '@/components/ui/EmptyState';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
-export default async function AlertsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string }>;
-}) {
-  const params = await searchParams;
-  const statusFilter = params.status;
+interface AlertItem {
+  id: string;
+  severity: string;
+  title: string;
+  description: string;
+  status: string;
+  triggered_at: string;
+}
 
-  let alerts: { id: string; severity: string; title: string; description: string; status: string; triggered_at: string }[] = [];
-  let open = 0, acked = 0;
-  let authRequired = false;
+export default function AlertsPage() {
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get('status') ?? undefined;
+  const { token, isAuthenticated, isLoading: authLoading, loginUrl } = useAuth();
 
-  try {
-    const res = await fetch(
-      `http://localhost:8000/api/v1/alerts?per_page=50${statusFilter ? `&status=${statusFilter}` : ''}`,
-      { next: { revalidate: 10 } }
-    );
-    if (res.status === 401) {
-      authRequired = true;
-    } else if (res.ok) {
-      const data = await res.json();
-      alerts = data.data ?? [];
-      open  = alerts.filter(a => a.status === 'OPEN').length;
-      acked = alerts.filter(a => a.status === 'ACKNOWLEDGED').length;
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [authRequired, setAuthRequired] = useState(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!isAuthenticated || !token) {
+      setAuthRequired(true);
+      setLoading(false);
+      return;
     }
-  } catch {}
+
+    async function fetchAlerts() {
+      try {
+        const url = `/api/v1/alerts?per_page=50${statusFilter ? `&status=${statusFilter}` : ''}`;
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        });
+        if (res.status === 401) {
+          setAuthRequired(true);
+        } else if (res.ok) {
+          const data = await res.json();
+          setAlerts(data.data ?? []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAlerts();
+  }, [token, isAuthenticated, authLoading, statusFilter]);
+
+  const open = alerts.filter(a => a.status === 'OPEN').length;
+  const acked = alerts.filter(a => a.status === 'ACKNOWLEDGED').length;
 
   const STATUSES = ['OPEN', 'ACKNOWLEDGED', 'RESOLVED'];
   const sevColor = (s: string) =>
@@ -46,6 +77,14 @@ export default async function AlertsPage({
   function fmt(iso: string) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
       new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  if (loading || authLoading) {
+    return (
+      <div className="flex flex-col gap-7 p-8 animate-fadein">
+        <PageHeader title="Alerts" subtitle="Loading..." />
+      </div>
+    );
   }
 
   return (
@@ -78,24 +117,14 @@ export default async function AlertsPage({
         <div className="rounded-[14px] border border-yellow-500/15 bg-yellow-500/[0.04] p-7">
           <h3 className="mb-2 font-semibold text-yellow-300">Authentication required</h3>
           <p className="mb-5 text-sm text-yellow-200/60">
-            The <code className="rounded bg-white/[0.08] px-1.5 py-0.5 font-mono text-xs">
-              /api/v1/alerts
-            </code> endpoint requires a JWT token. You can:
+            You need to sign in to view alerts.
           </p>
-          <ul className="space-y-2.5 text-sm text-yellow-200/60">
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-400">→</span>
-              View alerts on the <a href="http://localhost:8000/dashboard/alerts" target="_blank" className="text-cyan-400 underline underline-offset-2 hover:text-cyan-300">Jinja2 dashboard</a>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-400">→</span>
-              Add GitHub OAuth login to this frontend
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-400">→</span>
-              Or add a public read-only alerts endpoint
-            </li>
-          </ul>
+          <a
+            href={loginUrl}
+            className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-5 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/20"
+          >
+            Sign in with GitHub →
+          </a>
         </div>
       ) : (
         <>
