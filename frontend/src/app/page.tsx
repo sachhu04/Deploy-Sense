@@ -119,7 +119,7 @@ export default async function OverviewPage() {
                             ? <RiskBadge level={d.risk_level} score={d.risk_score} />
                             : <span className="text-slate-600">—</span>}
                         </td>
-                        <td className="px-5 py-3 font-mono text-xs text-slate-500">
+                        <td className="px-5 py-5 font-mono text-xs text-slate-500">
                           {fmt(d.created_at)}
                         </td>
                       </tr>

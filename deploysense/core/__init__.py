@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     github_client_secret: str = ""
     github_webhook_secret: str = ""
 
+    # ─── Frontend ────────────────────────────────────────────────────────
+    frontend_url: str = "http://localhost:3001"
+
+    # ─── Backend ─────────────────────────────────────────────────────────
+    backend_port: int = 8000
+
     # ─── Inter-Service Communication ─────────────────────────────────────
     risk_engine_url: str = "http://localhost:8001"
 
