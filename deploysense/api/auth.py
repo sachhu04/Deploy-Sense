@@ -35,13 +35,9 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from deploysense.core import get_settings
-from deploysense.database import get_db_session
 from deploysense.logging import get_logger
-from deploysense.models import User
 
 logger = get_logger(__name__)
 
@@ -161,26 +157,22 @@ async def fetch_github_user(access_token: str) -> dict:
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-    db: AsyncSession = Depends(get_db_session),
-) -> User:
+) -> dict:
     """
     FastAPI dependency that extracts and validates the current user.
 
     Usage in a route:
         @router.get("/me")
-        async def get_me(user: User = Depends(get_current_user)):
+        async def get_me(user: dict = Depends(get_current_user)):
             return user
 
     FLOW:
       1. Extract Bearer token from Authorization header
       2. Decode JWT
-      3. Look up User by ID from the JWT's "sub" claim
-      4. Return User or raise 401
+      3. Look up User by github_username from the JWT's "github" claim
+      4. Return User dict or raise 401
 
-    WHY a dependency (not middleware):
-      - Not all endpoints need auth (health, metrics, webhooks)
-      - Dependencies are explicit: you see Depends(get_current_user) in the route
-      - Middleware would add auth overhead to every request
+    NOTE: Uses in-memory user store (no DB required).
     """
     if not credentials:
         raise HTTPException(
@@ -192,6 +184,7 @@ async def get_current_user(
     try:
         payload = decode_access_token(credentials.credentials)
         user_id = payload.get("sub")
+        github_username = payload.get("github")
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -203,22 +196,29 @@ async def get_current_user(
             detail=f"Invalid token: {e}",
         )
 
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    # Import here to avoid circular imports
+    from deploysense.api.routes.auth import _users
+
+    user = _users.get(github_username)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-        )
+        # User was in a previous server session (memory cleared on restart).
+        # Create a placeholder entry from the JWT claims.
+        user = {
+            "id": user_id,
+            "github_username": github_username or "unknown",
+            "email": None,
+            "avatar_url": None,
+            "role": "engineer",
+        }
+        _users[github_username or "unknown"] = user
 
     return user
 
 
 async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-    db: AsyncSession = Depends(get_db_session),
-) -> User | None:
+) -> dict | None:
     """
     Like get_current_user but returns None instead of raising 401.
 
@@ -229,6 +229,6 @@ async def get_optional_user(
         return None
 
     try:
-        return await get_current_user(credentials, db)
+        return await get_current_user(credentials)
     except HTTPException:
         return None

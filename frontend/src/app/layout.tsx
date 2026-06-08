@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Sidebar from '@/components/layout/Sidebar';
+import { AuthProvider } from '@/lib/auth';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,13 +25,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
-        <div className="relative flex min-h-screen">
-          <Sidebar />
-          <div className="relative z-10 ml-[260px] flex flex-1 flex-col">
-            {children}
+        <AuthProvider>
+          <div className="relative flex min-h-screen">
+            <Sidebar />
+            <div className="relative z-10 ml-[260px] flex flex-1 flex-col">
+              {children}
+            </div>
           </div>
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+

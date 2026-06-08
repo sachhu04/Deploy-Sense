@@ -27,7 +27,6 @@ import hmac
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from deploysense.api.main import WEBHOOK_COUNT
 from deploysense.api.schemas import WebhookResponse
 from deploysense.core import get_settings
 from deploysense.database import get_db_session
@@ -36,6 +35,39 @@ from deploysense.logging import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter()
+
+
+# ─── Metrics ─────────────────────────────────────────────────────────────────
+# Simple in-memory counter for webhook events. In production this would be
+# a Prometheus Counter, but for MVP we use a lightweight stub to avoid
+# a circular import with main.py.
+
+class _WebhookCounter:
+    """Lightweight webhook event counter (stub for Prometheus Counter)."""
+
+    def __init__(self) -> None:
+        self._counts: dict[str, int] = {}
+
+    def labels(self, **kwargs: str) -> "_WebhookCounter":
+        self._label_key = "|".join(f"{k}={v}" for k, v in sorted(kwargs.items()))
+        return self
+
+    def inc(self) -> None:
+        key = getattr(self, "_label_key", "default")
+        self._counts[key] = self._counts.get(key, 0) + 1
+
+
+try:
+    # Use real Prometheus counter if available
+    from prometheus_client import Counter
+    WEBHOOK_COUNT = Counter(
+        "deploysense_webhooks_total",
+        "Total webhook events received",
+        ["event_type"],
+    )
+except ImportError:
+    # Fallback stub — no prometheus_client installed
+    WEBHOOK_COUNT = _WebhookCounter()  # type: ignore[assignment]
 
 
 def _verify_github_signature(payload: bytes, signature: str, secret: str) -> bool:
