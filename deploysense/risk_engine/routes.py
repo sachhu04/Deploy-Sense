@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Risk Engine API Routes (Sprint 2 Enhanced)
 
@@ -225,7 +227,7 @@ async def get_risk_trends(
     service_name: str,
     days: int = Query(default=30, ge=1, le=90),
     db: AsyncSession = Depends(get_db_session),
-) -> dict:
+) -> dict[str, Any]:
     """
     Risk trend analysis for a service.
 

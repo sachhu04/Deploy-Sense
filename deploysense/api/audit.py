@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Audit Logging (Phase 3)
 
@@ -106,7 +108,7 @@ async def record_audit(
     actor_name: str | None = None,
     resource_type: str | None = None,
     resource_id: str | None = None,
-    details: dict | None = None,
+    details: dict[str, Any] | None = None,
     ip_address: str | None = None,
 ) -> None:
     """

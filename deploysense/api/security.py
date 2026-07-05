@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any
+
 """
 DeploySense — Security Middleware (Phase 3)
 
@@ -23,7 +26,6 @@ RATE LIMITING STRATEGY:
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable
 
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -52,7 +54,7 @@ class RateLimiter:
     """
 
     def __init__(self) -> None:
-        self._buckets: dict[str, dict] = defaultdict(
+        self._buckets: dict[str, dict[str, Any]] = defaultdict(
             lambda: {"tokens": 100, "last_refill": time.monotonic()}
         )
 
@@ -129,7 +131,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         Unique request identifier for tracing and debugging.
     """
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Response:
         # Generate request ID
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
 
@@ -143,7 +145,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Request-ID"] = request_id
         response.headers["Cache-Control"] = "no-store"
 
-        return response
+        return response  # type: ignore[no-any-return]
 
 
 # ─── Rate Limit Middleware ───────────────────────────────────────────────────
@@ -160,12 +162,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
       - Skips rate limiting for health/metrics endpoints
     """
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Response:
         path = request.url.path
 
         # Skip rate limiting for infrastructure endpoints
         if path in ("/health", "/metrics", "/ready"):
-            return await call_next(request)
+            return await call_next(request)  # type: ignore[no-any-return]
 
         client_ip = request.client.host if request.client else "unknown"
         allowed, remaining = rate_limiter.is_allowed(client_ip, path)
@@ -185,7 +187,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
         response.headers["X-RateLimit-Remaining"] = str(remaining)
-        return response
+        return response  # type: ignore[no-any-return]
 
 
 # ─── Apply Middleware ────────────────────────────────────────────────────────

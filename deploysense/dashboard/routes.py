@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Dashboard Routes (Sprint 3)
 
@@ -37,7 +39,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="deploysense/dashboard/templates")
 
 
-def _database_unavailable_context(page: str, exc: Exception) -> dict:
+def _database_unavailable_context(page: str, exc: Exception) -> dict[str, Any]:
     """Return shared template state when Postgres is not reachable locally."""
     logger.warning(
         "dashboard_database_unavailable",

@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Pydantic Schemas (API Request/Response Models)
 
@@ -194,7 +196,7 @@ class ServiceHealthResponse(BaseModel):
     service: str
     status: str
     current_version: str | None = None
-    metrics: dict | None = None
+    metrics: dict[str, Any] | None = None
 
 
 # ─── Webhooks ────────────────────────────────────────────────────────────────

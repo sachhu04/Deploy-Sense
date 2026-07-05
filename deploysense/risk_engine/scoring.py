@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Enhanced Risk Scoring Engine (Sprint 2)
 
@@ -112,7 +114,7 @@ class RiskFactor:
         self.description = description
         self.category = category  # "static", "historical", "contextual"
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "contribution": self.contribution,
@@ -131,7 +133,7 @@ class RiskResult:
         failure_probability: float,
         recommendation: str,
         factors: list[RiskFactor],
-        feature_snapshot: dict,
+        feature_snapshot: dict[str, Any],
     ):
         self.risk_score = risk_score
         self.risk_level = risk_level
@@ -180,13 +182,13 @@ def compute_enhanced_risk(features: RiskFeatures) -> RiskResult:
 
     files = features.files_changed
     if files > 0:
-        c = _normalize_tier(files, WEIGHTS["files_changed"], tiers=[5, 20])
+        c = int(_normalize_tier(files, WEIGHTS["files_changed"], tiers=[5, 20]))
         score += c
         factors.append(RiskFactor("files_changed", c / 100, f"{files} files changed", "static"))
 
     lines = features.lines_added + features.lines_deleted
     if lines > 0:
-        c = _normalize_tier(lines, WEIGHTS["lines_changed"], tiers=[100, 500])
+        c = int(_normalize_tier(lines, WEIGHTS["lines_changed"], tiers=[100, 500]))
         score += c
         factors.append(
             RiskFactor("lines_changed", c / 100, f"{lines} total lines changed", "static")
@@ -223,7 +225,7 @@ def compute_enhanced_risk(features: RiskFeatures) -> RiskResult:
     # Service instability: Low stability score = high risk
     if features.service_stability_score < 80:
         instability = 100 - features.service_stability_score
-        c = min(WEIGHTS["service_instability"], instability * 0.15)
+        c = int(min(WEIGHTS["service_instability"], instability * 0.15))
         score += c
         factors.append(
             RiskFactor(
@@ -238,7 +240,7 @@ def compute_enhanced_risk(features: RiskFeatures) -> RiskResult:
     if features.current_error_rate > 0 and features.baseline_error_rate > 0:
         ratio = features.current_error_rate / max(features.baseline_error_rate, 0.001)
         if ratio > 2.0:  # Error rate is 2x baseline
-            c = min(WEIGHTS["metrics_anomaly"], (ratio - 1) * 4)
+            c = int(min(WEIGHTS["metrics_anomaly"], (ratio - 1) * 4))
             score += c
             factors.append(
                 RiskFactor(
@@ -254,7 +256,7 @@ def compute_enhanced_risk(features: RiskFeatures) -> RiskResult:
 
     time_risk = _compute_time_risk(features.deploy_hour_utc, features.deploy_day_of_week)
     if time_risk > 0:
-        c = WEIGHTS["time_of_day"] * time_risk
+        c = int(WEIGHTS["time_of_day"] * time_risk)
         score += c
         day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         factors.append(

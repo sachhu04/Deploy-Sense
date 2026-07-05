@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Repository API Routes
 
@@ -239,7 +241,7 @@ async def trigger_sync(
     repo_id: uuid.UUID,
     user: AuthenticatedUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
-) -> dict:
+) -> dict[str, Any]:
     """
     Manually trigger a repository sync.
 

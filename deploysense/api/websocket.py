@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — WebSocket Manager (Phase 2)
 
@@ -85,7 +87,7 @@ class ConnectionManager:
     def active_connections(self) -> int:
         return len(self._connections)
 
-    async def broadcast(self, event: dict) -> None:
+    async def broadcast(self, event: dict[str, Any]) -> None:
         """
         Send an event to all connected clients.
 
@@ -120,7 +122,7 @@ class ConnectionManager:
         except Exception:
             dead.append(ws)
 
-    async def send_to(self, websocket: WebSocket, event: dict) -> None:
+    async def send_to(self, websocket: WebSocket, event: dict[str, Any]) -> None:
         """Send an event to a specific connection."""
         event["timestamp"] = datetime.now(UTC).isoformat()
         try:

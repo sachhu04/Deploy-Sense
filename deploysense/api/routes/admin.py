@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Admin API Routes (Phase 3)
 
@@ -56,7 +58,7 @@ class AuditLogResponse(BaseModel):
     actor_name: str | None = None
     resource_type: str | None = None
     resource_id: str | None = None
-    details: dict | None = None
+    details: dict[str, Any] | None = None
     ip_address: str | None = None
     timestamp: datetime
 

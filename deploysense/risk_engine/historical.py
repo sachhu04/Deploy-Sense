@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Historical Feature Collector (Sprint 2)
 
@@ -32,7 +34,7 @@ async def collect_historical_features(
     db: AsyncSession,
     service_id: str | None,
     environment: str,
-) -> dict:
+) -> dict[str, Any]:
     """
     Gather historical features for risk scoring.
 
@@ -46,7 +48,7 @@ async def collect_historical_features(
       - baseline_error_rate: Average error rate over last 7 days
     """
     now = datetime.now(UTC)
-    features: dict = {
+    features: dict[str, Any] = {
         "recent_failure_count": 0,
         "deployments_last_24h": 0,
         "service_stability_score": 100,

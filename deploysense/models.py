@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Database Models
 
@@ -273,8 +275,8 @@ class RiskAssessment(Base):
     risk_level: Mapped[str] = mapped_column(String(50), nullable=False)
     failure_probability: Mapped[float | None] = mapped_column(Numeric(5, 4), nullable=True)
     recommendation: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    feature_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    factors: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    feature_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    factors: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
 
     # Relationships
@@ -354,12 +356,12 @@ class AIAnalysis(BaseModel):
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     risk_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
-    root_causes: Mapped[list | None] = mapped_column(JSONB, nullable=True)
-    recommendations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
-    failure_patterns: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    root_causes: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
+    recommendations: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
+    failure_patterns: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Numeric(3, 2), nullable=True)
     model_used: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    result: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
     # Relationships
     deployment: Mapped[Deployment | None] = relationship(back_populates="ai_analyses")
@@ -381,7 +383,7 @@ class AuditLog(Base):
     actor_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     resource_type: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     resource_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    details: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), nullable=False, index=True

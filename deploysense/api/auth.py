@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Authentication & Authorization
 
@@ -87,10 +89,10 @@ def create_access_token(user_id: str, github_username: str) -> str:
         "exp": now + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS),
         "iat": now,
     }
-    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)  # type: ignore[no-any-return]
 
 
-def decode_access_token(token: str) -> dict:
+def decode_access_token(token: str) -> dict[str, Any]:
     """
     Decode and validate a JWT access token.
 
@@ -100,13 +102,13 @@ def decode_access_token(token: str) -> dict:
       - JWTError: Invalid token structure
     """
     settings = get_settings()
-    return jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+    return jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])  # type: ignore[no-any-return]
 
 
 # ─── GitHub OAuth ────────────────────────────────────────────────────────────
 
 
-async def exchange_github_code(code: str) -> dict:
+async def exchange_github_code(code: str) -> dict[str, Any]:
     """
     Exchange GitHub OAuth authorization code for an access token.
 
@@ -141,10 +143,10 @@ async def exchange_github_code(code: str) -> dict:
                 detail=f"GitHub OAuth error: {data.get('error_description', data['error'])}",
             )
 
-        return data
+        return data  # type: ignore[no-any-return]
 
 
-async def fetch_github_user(access_token: str) -> dict:
+async def fetch_github_user(access_token: str) -> dict[str, Any]:
     """
     Fetch the authenticated user's GitHub profile.
 
@@ -164,7 +166,7 @@ async def fetch_github_user(access_token: str) -> dict:
             timeout=10.0,
         )
         response.raise_for_status()
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
 
 # ─── FastAPI Dependency: Get Current User ────────────────────────────────────
@@ -214,7 +216,7 @@ async def get_current_user(
     # Import here to avoid circular imports
     from deploysense.api.routes.auth import _users
 
-    user = _users.get(github_username)
+    user = _users.get(github_username)  # type: ignore[arg-type]
 
     if not user:
         # User was in a previous server session (memory cleared on restart).

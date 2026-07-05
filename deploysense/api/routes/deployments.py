@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Deployment API Routes
 
@@ -262,7 +264,7 @@ async def approve_deployment(
 @router.get("/deployments/stats")
 async def deployment_stats(
     db: AsyncSession = Depends(get_db_session),
-) -> dict:
+) -> dict[str, Any]:
     """
     Aggregate deployment statistics.
 
@@ -300,7 +302,7 @@ async def deployment_stats(
 async def get_deployment_timeline(
     deployment_id: uuid.UUID,
     db: AsyncSession = Depends(get_db_session),
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """
     Get the full event timeline for a deployment.
 
@@ -418,7 +420,7 @@ async def rollback_deployment(
 async def evaluate_deployment_risk(
     deployment_id: uuid.UUID,
     db: AsyncSession = Depends(get_db_session),
-) -> dict:
+) -> dict[str, Any]:
     """
     Trigger risk evaluation for a deployment.
 
@@ -514,7 +516,7 @@ async def evaluate_deployment_risk(
                 timeout=5.0,
             )
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
 
     except httpx.ConnectError as exc:
         raise HTTPException(

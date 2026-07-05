@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Alerts API Routes
 
@@ -53,7 +55,7 @@ async def list_alerts(
     severity: str | None = Query(default=None, description="Filter: INFO, WARNING, HIGH, CRITICAL"),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
-) -> dict:
+) -> dict[str, Any]:
     """
     List alerts with pagination and optional filters.
 

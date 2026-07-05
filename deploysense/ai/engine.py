@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — AI Analysis Engine (Phase 2)
 
@@ -56,9 +58,9 @@ class DeploymentAnalysis:
         self,
         summary: str,
         risk_explanation: str,
-        root_causes: list[dict],
-        recommendations: list[dict],
-        failure_patterns: list[dict],
+        root_causes: list[dict[str, Any]],
+        recommendations: list[dict[str, Any]],
+        failure_patterns: list[dict[str, Any]],
         confidence: float,
         model_used: str,
         latency_ms: float,
@@ -74,7 +76,7 @@ class DeploymentAnalysis:
         self.latency_ms = latency_ms
         self.risk_score = risk_score
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "summary": self.summary,
             "risk_explanation": self.risk_explanation,
@@ -91,7 +93,7 @@ class DeploymentAnalysis:
 # ─── Prompt Builder ──────────────────────────────────────────────────────────
 
 
-def build_deployment_prompt(context: dict) -> str:
+def build_deployment_prompt(context: dict[str, Any]) -> str:
     """
     Build a structured prompt for deployment analysis.
 
@@ -144,7 +146,7 @@ Respond with a JSON object containing:
 Respond ONLY with valid JSON. No markdown, no explanation outside JSON."""
 
 
-def build_pr_prompt(context: dict) -> str:
+def build_pr_prompt(context: dict[str, Any]) -> str:
     """
     Build a structured prompt for pull request analysis.
 
@@ -193,7 +195,7 @@ Respond with a JSON object containing:
 Respond ONLY with valid JSON. No markdown, no explanation outside JSON."""
 
 
-def _format_factors(factors: list[dict]) -> str:
+def _format_factors(factors: list[dict[str, Any]]) -> str:
     if not factors:
         return "- No risk factors identified"
     return "\n".join(
@@ -225,7 +227,7 @@ class AIEngine:
         self.model = model
         self.timeout = timeout
 
-    async def analyze_deployment(self, context: dict) -> DeploymentAnalysis:
+    async def analyze_deployment(self, context: dict[str, Any]) -> DeploymentAnalysis:
         """
         Analyze a deployment using the LLM.
 
@@ -275,7 +277,7 @@ class AIEngine:
             )
             return self._rule_based_analysis(context, latency)
 
-    async def analyze_pull_request(self, context: dict) -> DeploymentAnalysis:
+    async def analyze_pull_request(self, context: dict[str, Any]) -> DeploymentAnalysis:
         """
         Analyze a pull request for pre-deployment risk.
 
@@ -356,9 +358,9 @@ class AIEngine:
             )
             response.raise_for_status()
             data = response.json()
-            return data["choices"][0]["message"]["content"]
+            return data["choices"][0]["message"]["content"]  # type: ignore[no-any-return]
 
-    def _rule_based_analysis(self, context: dict, latency: float) -> DeploymentAnalysis:
+    def _rule_based_analysis(self, context: dict[str, Any], latency: float) -> DeploymentAnalysis:
         """
         Fallback: Generate analysis using rules when LLM is unavailable.
 
@@ -479,7 +481,9 @@ class AIEngine:
             risk_score=score,
         )
 
-    def _rule_based_pr_analysis(self, context: dict, latency: float) -> DeploymentAnalysis:
+    def _rule_based_pr_analysis(
+        self, context: dict[str, Any], latency: float
+    ) -> DeploymentAnalysis:
         """
         Fallback: Generate PR analysis using rules when LLM is unavailable.
         """

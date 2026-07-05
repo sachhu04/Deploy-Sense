@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — GitHub API Client
 
@@ -83,7 +85,7 @@ class GitHubClient:
         repo: str,
         state: str = "all",
         per_page: int = 30,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch pull requests for a repository.
 
@@ -116,7 +118,7 @@ class GitHubClient:
             repo=repo,
             count=len(prs),
         )
-        return prs
+        return prs  # type: ignore[no-any-return]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=10))
     async def get_pull_request_detail(
@@ -124,7 +126,7 @@ class GitHubClient:
         owner: str,
         repo: str,
         pr_number: int,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Fetch detailed PR data including files changed.
 
@@ -140,7 +142,7 @@ class GitHubClient:
         )
         self._check_rate_limit(response)
         response.raise_for_status()
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=10))
     async def get_pull_request_files(
@@ -148,7 +150,7 @@ class GitHubClient:
         owner: str,
         repo: str,
         pr_number: int,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch the list of files changed in a PR.
 
@@ -163,17 +165,17 @@ class GitHubClient:
         )
         self._check_rate_limit(response)
         response.raise_for_status()
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
     # ─── Repository ──────────────────────────────────────────────────────
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=10))
-    async def get_repository(self, owner: str, repo: str) -> dict:
+    async def get_repository(self, owner: str, repo: str) -> dict[str, Any]:
         """Fetch repository metadata."""
         response = await self.client.get(f"/repos/{owner}/{repo}")
         self._check_rate_limit(response)
         response.raise_for_status()
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
     # ─── Rate Limit ──────────────────────────────────────────────────────
 
@@ -228,7 +230,7 @@ INFRA_PATTERNS = [
 ]
 
 
-def detect_migration(files: list[dict]) -> bool:
+def detect_migration(files: list[dict[str, Any]]) -> bool:
     """Check if any file in a PR looks like a database migration."""
     for f in files:
         path = f.get("filename", "").lower()
@@ -237,7 +239,7 @@ def detect_migration(files: list[dict]) -> bool:
     return False
 
 
-def detect_infra_change(files: list[dict]) -> bool:
+def detect_infra_change(files: list[dict[str, Any]]) -> bool:
     """Check if any file in a PR looks like an infrastructure change."""
     for f in files:
         path = f.get("filename", "").lower()

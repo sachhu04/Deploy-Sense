@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Webhook Routes
 
@@ -176,7 +178,7 @@ async def github_webhook(
     return WebhookResponse(status="received", event_id=payload.get("delivery"))
 
 
-async def _handle_pull_request(payload: dict, db: AsyncSession) -> None:
+async def _handle_pull_request(payload: dict[str, Any], db: AsyncSession) -> None:
     """
     Process pull_request webhook event.
 
@@ -293,7 +295,7 @@ async def _handle_pull_request(payload: dict, db: AsyncSession) -> None:
         logger.info("github_pr_created", pr_number=pr_number, repository=repo_full_name)
 
 
-async def _handle_deployment_event(payload: dict, db: AsyncSession) -> None:
+async def _handle_deployment_event(payload: dict[str, Any], db: AsyncSession) -> None:
     """
     Process deployment webhook event.
 

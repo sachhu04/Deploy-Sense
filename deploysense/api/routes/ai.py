@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — AI Analysis API Routes (Phase 2)
 
@@ -54,9 +56,9 @@ class AnalysisResponse(BaseModel):
     analysis_type: str
     summary: str | None = None
     risk_explanation: str | None = None
-    root_causes: list[dict] | None = None
-    recommendations: list[dict] | None = None
-    failure_patterns: list[dict] | None = None
+    root_causes: list[dict[str, Any]] | None = None
+    recommendations: list[dict[str, Any]] | None = None
+    failure_patterns: list[dict[str, Any]] | None = None
     confidence: float | None = None
     model_used: str | None = None
     created_at: datetime
@@ -170,7 +172,7 @@ async def analyze_deployment(
         id=analysis.id,
         deployment_id=analysis.deployment_id,
         status=analysis.status,
-        analysis_type=analysis.analysis_type,
+        analysis_type=analysis.analysis_type or "unknown",
         summary=result.summary,
         risk_explanation=result.risk_explanation,
         root_causes=result.root_causes,
@@ -246,7 +248,7 @@ async def analyze_pull_request(
         "lines_deleted": pr.lines_deleted or 0,
         "has_db_migration": pr.has_db_migration,
         "has_infra_change": pr.has_infra_change,
-        "service_name": repository.name or body.repository_name,
+        "service_name": repository.repository_name or body.repository_name,
     }
 
     # Get historical context for this service if available
@@ -297,7 +299,7 @@ async def analyze_pull_request(
         id=analysis.id,
         deployment_id=analysis.deployment_id,
         status=analysis.status,
-        analysis_type=analysis.analysis_type,
+        analysis_type=analysis.analysis_type or "unknown",
         summary=result.summary,
         risk_explanation=result.risk_explanation,
         root_causes=result.root_causes,
@@ -328,7 +330,7 @@ async def get_analysis(
         id=analysis.id,
         deployment_id=analysis.deployment_id,
         status=analysis.status,
-        analysis_type=analysis.analysis_type,
+        analysis_type=analysis.analysis_type or "unknown",
         summary=analysis.summary,
         risk_explanation=analysis.risk_explanation,
         root_causes=analysis.root_causes,

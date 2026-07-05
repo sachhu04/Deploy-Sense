@@ -17,6 +17,7 @@ ERROR HANDLING:
 
 import time
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import select
 
@@ -310,7 +311,7 @@ async def metrics_collection_job() -> None:
 
 
 async def _query_prometheus(
-    client,  # type: ignore[no-untyped-def]
+    client: Any,
     prometheus_url: str,
     query: str,
 ) -> float:

@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 DeploySense — Authentication Routes
 
@@ -42,7 +44,7 @@ router = APIRouter()
 
 # ─── In-Memory User Store (placeholder until DB is available) ────────────────
 # Key: github_username, Value: user dict
-_users: dict[str, dict] = {}
+_users: dict[str, dict[str, Any]] = {}
 
 
 # ─── Request/Response Schemas ────────────────────────────────────────────────
@@ -77,7 +79,7 @@ class UserProfile(BaseModel):
 # ─── Helper: upsert user in memory store ────────────────────────────────────
 
 
-def _upsert_user(github_user: dict) -> dict:
+def _upsert_user(github_user: dict[str, Any]) -> dict[str, Any]:
     """Create or update user in the in-memory store. Returns user dict."""
     username = github_user["login"]
     if username in _users:

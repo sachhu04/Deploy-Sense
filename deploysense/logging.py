@@ -20,6 +20,7 @@ ALTERNATIVE: python-json-logger — simpler but lacks context binding.
 
 import logging
 import sys
+from typing import Any
 
 import structlog
 
@@ -36,6 +37,7 @@ def setup_logging() -> None:
 
     # Development: human-readable colored output
     # Production: JSON for machine parsing
+    renderer: Any
     if settings.is_development:
         renderer = structlog.dev.ConsoleRenderer()
     else:
@@ -74,4 +76,4 @@ def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
         logger = get_logger(__name__)
         logger.info("deployment_created", deployment_id="dep_123", service="payments-api")
     """
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]

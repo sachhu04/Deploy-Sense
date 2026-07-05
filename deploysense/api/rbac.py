@@ -33,6 +33,7 @@ IMPLEMENTATION:
 """
 
 from enum import Enum
+from typing import Any
 
 from fastapi import Depends, HTTPException, status
 
@@ -168,7 +169,7 @@ def check_permission(user: User, permission: Permission) -> None:
 # ─── FastAPI Dependencies ────────────────────────────────────────────────────
 
 
-def require_permission(permission: Permission):
+def require_permission(permission: Permission) -> Any:
     """
     FastAPI dependency factory for permission-based access control.
 
@@ -198,7 +199,7 @@ def require_permission(permission: Permission):
     return _check
 
 
-def require_role(role: str):
+def require_role(role: str) -> Any:
     """
     FastAPI dependency: require a minimum role.
 
