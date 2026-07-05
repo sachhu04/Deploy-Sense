@@ -76,9 +76,7 @@ async def list_deployments(
     total = total_result.scalar() or 0
 
     # Fetch page
-    query = query.options(selectinload(Deployment.service)).order_by(
-        Deployment.created_at.desc()
-    )
+    query = query.options(selectinload(Deployment.service)).order_by(Deployment.created_at.desc())
     query = query.offset((page - 1) * per_page).limit(per_page)
     result = await db.execute(query)
     deployments = result.scalars().all()

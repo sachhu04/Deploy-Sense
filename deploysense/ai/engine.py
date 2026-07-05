@@ -326,7 +326,7 @@ class AIEngine:
         """Call the LLM API and return the response text."""
         if not self.api_key or self.api_key == "your-api-key-here":
             raise ValueError("AI_API_KEY is not configured")
-            
+
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.api_base}/chat/completions",
